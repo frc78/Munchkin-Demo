@@ -8,26 +8,20 @@ import edu.wpi.first.wpilibj2.command.Command
  * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
  * subsystems, commands, and trigger mappings) should be declared here.
  *
- * In Kotlin, it is recommended that all your Subsystems are Kotlin objects. As such, there
- * can only ever be a single instance. This eliminates the need to create reference variables
- * to the various subsystems in this container to pass into to commands. The commands can just
- * directly reference the (single instance of the) object.
+ * In Kotlin, it is recommended that all your Subsystems are Kotlin objects. As such, there can only
+ * ever be a single instance. This eliminates the need to create reference variables to the various
+ * subsystems in this container to pass into to commands. The commands can just directly reference
+ * the (single instance of the) object.
  */
-object RobotContainer
-{
-    init
-    {
+object RobotContainer {
+    init {
         configureBindings()
     }
 
     /** Use this method to define your `trigger->command` mappings. */
-    private fun configureBindings()
-    {
+    private fun configureBindings() {}
 
-    }
-
-    fun getAutonomousCommand(): Command?
-    {
+    fun getAutonomousCommand(): Command? {
         // TODO: Implement properly
         return null
     }
