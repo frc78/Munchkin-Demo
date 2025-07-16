@@ -5,11 +5,12 @@ plugins {
     id "java"
     id "org.jetbrains.kotlin.jvm" version "2.1.0"
     id "edu.wpi.first.GradleRIO" version "2025.3.2"
+    id 'com.diffplug.spotless' version '7.1.0'
     id "idea"
 }
 
 def javaVersion = JavaVersion.VERSION_17
-def kotlinJvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.@Companion.fromTarget(javaVersion.toString())
+def kotlinJvmTarget = JvmTarget.@Companion.fromTarget(javaVersion.toString())
 
 java {
     sourceCompatibility = javaVersion
@@ -133,5 +134,14 @@ idea {
         // Exclude the following from indexing and search
         excludeDirs+=file(".run" )
         excludeDirs+=file(".vscode" )
+    }
+}
+
+spotless {
+    kotlin {
+        ktfmt().kotlinlangStyle()
+    }
+    java {
+        googleJavaFormat()
     }
 }
