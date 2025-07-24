@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 
 object FeederSubsystem : SubsystemBase() {
-    private val motor = TalonFX(15)
+    private val motor = TalonFX(16)
 
     fun Intake(): Command {
         return startEnd(
@@ -16,6 +16,7 @@ object FeederSubsystem : SubsystemBase() {
             )
             .until { motor.forwardLimit.value == ForwardLimitValue.ClosedToGround }
     }
+
     fun Shooter(): Command {
         return startEnd(
             { motor.setControl(shooterControl.withOutput(0.5)) },
