@@ -1,13 +1,12 @@
 package frc.robot
 
-import edu.wpi.first.hal.FRCNetComm.tInstances
-import edu.wpi.first.hal.FRCNetComm.tResourceType
-import edu.wpi.first.hal.HAL
+import com.ctre.phoenix6.swerve.SwerveModule
+import com.ctre.phoenix6.swerve.SwerveRequest
 import edu.wpi.first.wpilibj.TimedRobot
-import edu.wpi.first.wpilibj.util.WPILibVersion
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController
+import frc.robot.subsystems.Drivetrain
 import frc.robot.subsystems.IntakeSubsystem
 
 /**
@@ -22,50 +21,34 @@ import frc.robot.subsystems.IntakeSubsystem
  */
 object Robot : TimedRobot() {
 
+    private const val MAX_SPEED_MS = 2.0
+    private const val MAX_ANGULAR_SPEED_RAD_S = 2.0
     private var autonomousCommand: Command? = null
 
     val controller = CommandXboxController(0)
 
     init {
         controller.a().whileTrue(IntakeSubsystem.Intake())
-    }
 
-    init {
-        // Kotlin initializer block, which effectually serves as the constructor code.
-        // https://kotlinlang.org/docs/classes.html#constructors
-        // This work can also be done in the inherited `robotInit()` method. But as of the 2025
-        // season the
-        // `robotInit` method's Javadoc encourages using the constructor and the official templates
-        // moved initialization code out `robotInit` and into the constructor. We follow suit in
-        // Kotlin.
+        val drive =
+            SwerveRequest.FieldCentric()
+                .withDriveRequestType(SwerveModule.DriveRequestType.OpenLoopVoltage)
+                .withDeadband(0.1)
+                .withRotationalDeadband(0.1)
+        Drivetrain.defaultCommand =
+            Drivetrain.applyRequest {
+                drive
+                    .withVelocityX(-controller.leftY * MAX_SPEED_MS)
+                    .withVelocityY(-controller.leftX * MAX_SPEED_MS)
+                    .withRotationalRate(-controller.rightX * MAX_ANGULAR_SPEED_RAD_S)
+            }
 
-        // Report the use of the Kotlin Language for "FRC Usage Report" statistics.
-        // Please retain this line so that Kotlin's growing use by teams is seen by FRC/WPI.
-        HAL.report(
-            tResourceType.kResourceType_Language,
-            tInstances.kLanguage_Kotlin,
-            0,
-            WPILibVersion.Version,
-        )
-        // Access the RobotContainer object so that it is initialized. This will perform all our
-        // button bindings, and put our autonomous chooser on the dashboard.
-        RobotContainer
+        controller.start().onTrue(Drivetrain.runOnce { Drivetrain.seedFieldCentric() })
     }
 
     override fun robotPeriodic() {
         CommandScheduler.getInstance().run()
     }
-
-    override fun disabledInit() {}
-
-    override fun disabledPeriodic() {}
-
-    override fun autonomousInit() {
-        autonomousCommand = RobotContainer.getAutonomousCommand()
-        autonomousCommand?.schedule()
-    }
-
-    override fun autonomousPeriodic() {}
 
     override fun teleopInit() {
         autonomousCommand?.cancel()
@@ -78,10 +61,4 @@ object Robot : TimedRobot() {
         // Cancels all running commands at the start of test mode.
         CommandScheduler.getInstance().cancelAll()
     }
-
-    override fun testPeriodic() {}
-
-    override fun simulationInit() {}
-
-    override fun simulationPeriodic() {}
 }
