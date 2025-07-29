@@ -45,8 +45,8 @@ object Robot : TimedRobot() {
             }
 
         controller.start().onTrue(Drivetrain.runOnce { Drivetrain.seedFieldCentric() })
-        controller.rightTrigger().onTrue(Elevator.ElevatorUp())
-        controller.leftTrigger().onTrue(Elevator.ElevatorDown())
+        controller.rightTrigger().onTrue(Elevator.elevatorUp())
+        controller.leftTrigger().onTrue(Elevator.elevatorDown())
     }
 
     override fun robotPeriodic() {

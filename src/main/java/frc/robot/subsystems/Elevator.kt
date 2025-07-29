@@ -12,8 +12,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase
 object Elevator : SubsystemBase() {
 
     private val leader = TalonFX(11)
-    val leaderConfig = TalonFXConfiguration()
-    val FollowerMotor = TalonFX(12)
+    private val leaderConfig = TalonFXConfiguration()
+    private val follower = TalonFX(12)
 
     init {
         leaderConfig.Feedback.SensorToMechanismRatio = 25.0 / (Math.PI * 1.29)
@@ -32,18 +32,18 @@ object Elevator : SubsystemBase() {
         leaderConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true
         leaderConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true
         leader.configurator.apply(leaderConfig)
-        FollowerMotor.setControl(Follower(11, true))
+        follower.setControl(Follower(11, true))
     }
 
-    val PositionControl = MotionMagicVoltage(0.0)
+    val positionControl = MotionMagicVoltage(0.0)
 
-    fun ElevatorUp(): Command {
-        return runOnce { leader.setControl(PositionControl.withPosition(16.0)) }
+    fun elevatorUp(): Command {
+        return runOnce { leader.setControl(positionControl.withPosition(16.0)) }
 
     }
 
-    fun ElevatorDown(): Command {
-        return runOnce { leader.setControl(PositionControl.withPosition(0.0)) }
+    fun elevatorDown(): Command {
+        return runOnce { leader.setControl(positionControl.withPosition(0.0)) }
     }
 
 
