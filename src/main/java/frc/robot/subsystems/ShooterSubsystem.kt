@@ -10,7 +10,7 @@ object ShooterSubsystem {
     private val leader = TalonFX(14)
     private val follower = TalonFX(15)
 
-    init{
+    init {
         follower.setControl(Follower(14, false))
     }
 
@@ -19,11 +19,11 @@ object ShooterSubsystem {
     }
 
     fun shootMedium(): Command {
-        return startEnd({ leader.setControl(shooterMedium) }, {leader.set(0.0) })
+        return startEnd({ leader.setControl(shooterMedium) }, { leader.set(0.0) })
     }
 
     fun shootSlow(): Command {
-        return startEnd({ leader.setControl(shooterSlow) }, {leader.set(0.0) })
+        return startEnd({ leader.setControl(shooterSlow) }, { leader.set(0.0) })
     }
 
     private val shooterFast = VelocityVoltage(6000.0)

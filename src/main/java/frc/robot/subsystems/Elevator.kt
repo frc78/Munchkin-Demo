@@ -8,7 +8,6 @@ import com.ctre.phoenix6.signals.InvertedValue
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 
-
 object Elevator : SubsystemBase() {
 
     private val leader = TalonFX(11)
@@ -39,13 +38,9 @@ object Elevator : SubsystemBase() {
 
     fun elevatorUp(): Command {
         return runOnce { leader.setControl(positionControl.withPosition(16.0)) }
-
     }
 
     fun elevatorDown(): Command {
         return runOnce { leader.setControl(positionControl.withPosition(0.0)) }
     }
-
-
 }
-

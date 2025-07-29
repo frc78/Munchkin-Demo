@@ -19,11 +19,12 @@ object FeederSubsystem : SubsystemBase() {
 
     fun Shooter(): Command {
         return startEnd(
-            { motor.setControl(shooterControl.withOutput(0.5)) },
-            { motor.setControl(shooterControl.withOutput(0.0)) },
-        )
+                { motor.setControl(shooterControl.withOutput(0.5)) },
+                { motor.setControl(shooterControl.withOutput(0.0)) },
+            )
             .until { motor.forwardLimit.value == ForwardLimitValue.Open }
     }
+
     val intakeControl = DutyCycleOut(0.0).withIgnoreHardwareLimits(false)
     val shooterControl = DutyCycleOut(0.0).withIgnoreHardwareLimits(true)
 }
