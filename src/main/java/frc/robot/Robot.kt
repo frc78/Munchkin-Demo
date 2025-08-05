@@ -3,12 +3,15 @@ package frc.robot
 import com.ctre.phoenix6.swerve.SwerveModule
 import com.ctre.phoenix6.swerve.SwerveRequest
 import edu.wpi.first.wpilibj.TimedRobot
-import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.CommandScheduler
+import edu.wpi.first.wpilibj2.command.button.CommandGenericHID
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController
+import frc.robot.commands.intakeNote
 import frc.robot.subsystems.Drivetrain
 import frc.robot.subsystems.Elevator
-import frc.robot.subsystems.IntakeSubsystem
+import frc.robot.subsystems.FeederSubsystem
+import frc.robot.subsystems.ShooterSubsystem
+import frc.robot.subsystems.WristSubsystem
 
 /**
  * The functions in this object (which basically functions as a singleton class) are called
@@ -22,14 +25,16 @@ import frc.robot.subsystems.IntakeSubsystem
  */
 object Robot : TimedRobot() {
 
-    private const val MAX_SPEED_MS = 2.0
+    private const val MAX_SPEED_MS = 1.0
     private const val MAX_ANGULAR_SPEED_RAD_S = 2.0
-    private var autonomousCommand: Command? = null
 
-    val controller = CommandXboxController(0)
+    val masterController = CommandXboxController(0)
+    val demoController = CommandXboxController(1)
+
+    val buttonBoard = CommandGenericHID(2)
 
     init {
-        controller.a().whileTrue(IntakeSubsystem.Intake())
+        masterController.a().whileTrue(intakeNote())
 
         val drive =
             SwerveRequest.FieldCentric()
@@ -39,29 +44,39 @@ object Robot : TimedRobot() {
         Drivetrain.defaultCommand =
             Drivetrain.applyRequest {
                 drive
-                    .withVelocityX(-controller.leftY * MAX_SPEED_MS)
-                    .withVelocityY(-controller.leftX * MAX_SPEED_MS)
-                    .withRotationalRate(-controller.rightX * MAX_ANGULAR_SPEED_RAD_S)
+                    .withVelocityX(-masterController.leftY * MAX_SPEED_MS)
+                    .withVelocityY(-masterController.leftX * MAX_SPEED_MS)
+                    .withRotationalRate(-masterController.rightX * MAX_ANGULAR_SPEED_RAD_S)
             }
 
-        controller.start().onTrue(Drivetrain.runOnce { Drivetrain.seedFieldCentric() })
-        controller.rightTrigger().onTrue(Elevator.elevatorUp())
-        controller.leftTrigger().onTrue(Elevator.elevatorDown())
+        masterController.start().onTrue(Drivetrain.runOnce { Drivetrain.seedFieldCentric() })
+
+        buttonBoard.axisGreaterThan(1, 0.5).whileTrue(WristSubsystem.lowerWrist())
+        buttonBoard.axisLessThan(1, -0.5).whileTrue(WristSubsystem.raiseWrist())
+
+        buttonBoard.button(6).whileTrue(ShooterSubsystem.shootSlow())
+        buttonBoard.button(8).whileTrue(ShooterSubsystem.shootMedium())
+        buttonBoard.button(10).whileTrue(ShooterSubsystem.shootFast())
+        buttonBoard.button(1).onTrue(FeederSubsystem.shoot())
+
+        buttonBoard.button(3).onTrue(Elevator.elevatorUp())
+        buttonBoard.button(4).onTrue(Elevator.elevatorDown())
+        buttonBoard.button(9).whileTrue(intakeNote())
+        buttonBoard.button(7).whileTrue(FeederSubsystem.outtake())
+
+        masterController
+            .x()
+            .whileTrue(
+                Drivetrain.applyRequest {
+                    drive
+                        .withVelocityX(-demoController.leftY * MAX_SPEED_MS)
+                        .withVelocityY(-demoController.leftX * MAX_SPEED_MS)
+                        .withRotationalRate(-demoController.rightX * MAX_ANGULAR_SPEED_RAD_S)
+                }
+            )
     }
 
     override fun robotPeriodic() {
         CommandScheduler.getInstance().run()
-    }
-
-    override fun teleopInit() {
-        autonomousCommand?.cancel()
-    }
-
-    /** This method is called periodically during operator control. */
-    override fun teleopPeriodic() {}
-
-    override fun testInit() {
-        // Cancels all running commands at the start of test mode.
-        CommandScheduler.getInstance().cancelAll()
     }
 }

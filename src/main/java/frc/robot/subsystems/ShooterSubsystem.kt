@@ -1,7 +1,7 @@
 package frc.robot.subsystems
 
+import com.ctre.phoenix6.controls.DutyCycleOut
 import com.ctre.phoenix6.controls.Follower
-import com.ctre.phoenix6.controls.VelocityVoltage
 import com.ctre.phoenix6.hardware.TalonFX
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.Commands.startEnd
@@ -26,7 +26,7 @@ object ShooterSubsystem {
         return startEnd({ leader.setControl(shooterSlow) }, { leader.set(0.0) })
     }
 
-    private val shooterFast = VelocityVoltage(6000.0)
-    private val shooterMedium = VelocityVoltage(4000.0)
-    private val shooterSlow = VelocityVoltage(2000.0)
+    private val shooterFast = DutyCycleOut(1.0)
+    private val shooterMedium = DutyCycleOut(2.0 / 3.0)
+    private val shooterSlow = DutyCycleOut(1.0 / 3.0)
 }

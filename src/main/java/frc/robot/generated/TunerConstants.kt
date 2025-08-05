@@ -153,45 +153,45 @@ object TunerConstants {
     private const val kFrontLeftDriveMotorId = 1
     private const val kFrontLeftSteerMotorId = 2
     private const val kFrontLeftEncoderId = 1
-    private val kFrontLeftEncoderOffset = Rotations.of(0.15234375)
+    private val kFrontLeftEncoderOffset = Rotations.of(0.152099609375)
     private const val kFrontLeftSteerMotorInverted = true
     private const val kFrontLeftEncoderInverted = false
 
-    private val kFrontLeftXPos = Inches.of(10.0)
-    private val kFrontLeftYPos = Inches.of(10.0)
+    private val kFrontLeftXPos = Inches.of(8.5)
+    private val kFrontLeftYPos = Inches.of(8.5)
 
     // Front Right
     private const val kFrontRightDriveMotorId = 3
     private const val kFrontRightSteerMotorId = 4
     private const val kFrontRightEncoderId = 2
-    private val kFrontRightEncoderOffset = Rotations.of(-0.4873046875)
+    private val kFrontRightEncoderOffset = Rotations.of(-0.216796875)
     private const val kFrontRightSteerMotorInverted = true
     private const val kFrontRightEncoderInverted = false
 
-    private val kFrontRightXPos = Inches.of(10.0)
-    private val kFrontRightYPos = Inches.of(-10.0)
+    private val kFrontRightXPos = Inches.of(8.5)
+    private val kFrontRightYPos = Inches.of(-8.5)
 
     // Back Left
     private const val kBackLeftDriveMotorId = 5
     private const val kBackLeftSteerMotorId = 6
     private const val kBackLeftEncoderId = 3
-    private val kBackLeftEncoderOffset = Rotations.of(-0.219482421875)
+    private val kBackLeftEncoderOffset = Rotations.of(-0.455322265625)
     private const val kBackLeftSteerMotorInverted = true
     private const val kBackLeftEncoderInverted = false
 
-    private val kBackLeftXPos = Inches.of(-10.0)
-    private val kBackLeftYPos = Inches.of(10.0)
+    private val kBackLeftXPos = Inches.of(-8.5)
+    private val kBackLeftYPos = Inches.of(8.5)
 
     // Back Right
     private const val kBackRightDriveMotorId = 7
     private const val kBackRightSteerMotorId = 8
     private const val kBackRightEncoderId = 4
-    private val kBackRightEncoderOffset = Rotations.of(0.17236328125)
+    private val kBackRightEncoderOffset = Rotations.of(-0.465576171875)
     private const val kBackRightSteerMotorInverted = true
     private const val kBackRightEncoderInverted = false
 
-    private val kBackRightXPos = Inches.of(-10.0)
-    private val kBackRightYPos = Inches.of(-10.0)
+    private val kBackRightXPos = Inches.of(-8.5)
+    private val kBackRightYPos = Inches.of(-8.5)
 
     val FrontLeft:
         SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> =

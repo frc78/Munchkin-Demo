@@ -25,7 +25,7 @@ object Elevator : SubsystemBase() {
         leaderConfig.Slot0.kV = 0.70964
         leaderConfig.Slot0.kA = 0.018805
         leaderConfig.Slot0.kG = 0.12011
-        leaderConfig.MotionMagic.MotionMagicAcceleration = 80.0
+        leaderConfig.MotionMagic.MotionMagicAcceleration = 40.0
         leaderConfig.MotionMagic.MotionMagicCruiseVelocity = 15.0
         leaderConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive
         leaderConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true

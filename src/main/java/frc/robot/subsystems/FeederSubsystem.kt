@@ -17,7 +17,7 @@ object FeederSubsystem : SubsystemBase() {
             .until { motor.forwardLimit.value == ForwardLimitValue.ClosedToGround }
     }
 
-    fun Shooter(): Command {
+    fun shoot(): Command {
         return startEnd(
                 { motor.setControl(shooterControl.withOutput(0.5)) },
                 { motor.setControl(shooterControl.withOutput(0.0)) },
@@ -25,6 +25,11 @@ object FeederSubsystem : SubsystemBase() {
             .until { motor.forwardLimit.value == ForwardLimitValue.Open }
     }
 
+    fun outtake(): Command {
+        return startEnd({ motor.setControl(outtakeControl) }, { motor.stopMotor() })
+    }
+
     val intakeControl = DutyCycleOut(0.0).withIgnoreHardwareLimits(false)
+    val outtakeControl = DutyCycleOut(-0.5).withIgnoreHardwareLimits(false)
     val shooterControl = DutyCycleOut(0.0).withIgnoreHardwareLimits(true)
 }
