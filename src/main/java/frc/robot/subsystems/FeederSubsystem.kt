@@ -29,6 +29,9 @@ object FeederSubsystem : SubsystemBase() {
         return startEnd({ motor.setControl(outtakeControl) }, { motor.stopMotor() })
     }
 
+    val hasNote
+        get() = motor.forwardLimit.value == ForwardLimitValue.ClosedToGround
+
     val intakeControl = DutyCycleOut(0.0).withIgnoreHardwareLimits(false)
     val outtakeControl = DutyCycleOut(-0.5).withIgnoreHardwareLimits(false)
     val shooterControl = DutyCycleOut(0.0).withIgnoreHardwareLimits(true)

@@ -6,10 +6,12 @@ import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController
+import edu.wpi.first.wpilibj2.command.button.Trigger
 import frc.robot.commands.intakeNote
 import frc.robot.subsystems.Drivetrain
 import frc.robot.subsystems.Elevator
 import frc.robot.subsystems.FeederSubsystem
+import frc.robot.subsystems.Leds
 import frc.robot.subsystems.ShooterSubsystem
 import frc.robot.subsystems.WristSubsystem
 
@@ -74,6 +76,8 @@ object Robot : TimedRobot() {
                         .withRotationalRate(-demoController.rightX * MAX_ANGULAR_SPEED_RAD_S)
                 }
             )
+
+        Trigger { FeederSubsystem.hasNote }.onTrue(Leds.flashGreen())
     }
 
     override fun robotPeriodic() {
