@@ -69,4 +69,7 @@ object WristSubsystem : SubsystemBase() {
             motor.setControl(motorControl.withPosition(newPosition).withVelocity(-wristSpeed))
         }
     }
+
+    val atIntakePosition
+        get() = motor.position.valueAsDouble >= 50.0
 }
