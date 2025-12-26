@@ -5,42 +5,55 @@ import com.ctre.phoenix6.controls.Follower
 import com.ctre.phoenix6.controls.MotionMagicVoltage
 import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.signals.InvertedValue
-import edu.wpi.first.wpilibj2.command.Command
-import edu.wpi.first.wpilibj2.command.SubsystemBase
+import frc.robot.hid.MunchkinButtonBoard
+import frc.robot.hid.MunchkinController
 
-object Elevator : SubsystemBase() {
+object Elevator {
 
-    private val leader = TalonFX(11)
-    private val leaderConfig = TalonFXConfiguration()
-    private val follower = TalonFX(12)
+  private val PositionControl = MotionMagicVoltage(0.0)
 
-    init {
-        leaderConfig.Feedback.SensorToMechanismRatio = 25.0 / (Math.PI * 1.29)
-        leaderConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 0.0
-        leaderConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 16.0
-        leaderConfig.Slot0.kP = 66.84
-        leaderConfig.Slot0.kI = 0.0
-        leaderConfig.Slot0.kD = 1.7421
-        leaderConfig.Slot0.kS = 0.22964
-        leaderConfig.Slot0.kV = 0.70964
-        leaderConfig.Slot0.kA = 0.018805
-        leaderConfig.Slot0.kG = 0.12011
-        leaderConfig.MotionMagic.MotionMagicAcceleration = 40.0
-        leaderConfig.MotionMagic.MotionMagicCruiseVelocity = 15.0
-        leaderConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive
-        leaderConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true
-        leaderConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true
-        leader.configurator.apply(leaderConfig)
-        follower.setControl(Follower(11, true))
+  private val leader = TalonFX(11)
+  private val follower = TalonFX(12)
+
+  init {
+    val leaderConfig =
+        TalonFXConfiguration().apply {
+          Feedback.SensorToMechanismRatio = 25.0
+          SoftwareLimitSwitch.apply {
+            ReverseSoftLimitThreshold = 0.0
+            ForwardSoftLimitThreshold = 16.0
+            ForwardSoftLimitEnable = true
+            ReverseSoftLimitEnable = true
+          }
+          Slot0.apply {
+            kP = 66.84
+            kI = 0.0
+            kD = 1.7421
+            kS = 0.22964
+            kV = 0.70964
+            kA = 0.018805
+            kG = 0.12011
+          }
+          MotionMagic.apply {
+            MotionMagicAcceleration = 40.0
+            MotionMagicCruiseVelocity = 15.0
+          }
+          MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive
+        }
+    leader.configurator.apply(leaderConfig)
+    follower.setControl(Follower(11, true))
+  }
+
+  fun stateMachine() {
+    leader.setControl(PositionControl)
+    if (MunchkinController.raiseElevator() || MunchkinButtonBoard.raiseElevator()) {
+      PositionControl.withPosition(16.0)
+    } else if (
+        MunchkinController.home() ||
+            MunchkinButtonBoard.lowerElevator() ||
+            MunchkinButtonBoard.home()
+    ) {
+      PositionControl.withPosition(0.0)
     }
-
-    val positionControl = MotionMagicVoltage(0.0)
-
-    fun elevatorUp(): Command {
-        return runOnce { leader.setControl(positionControl.withPosition(16.0)) }
-    }
-
-    fun elevatorDown(): Command {
-        return runOnce { leader.setControl(positionControl.withPosition(0.0)) }
-    }
+  }
 }
