@@ -1,12 +1,22 @@
 package frc.robot
 
-import edu.wpi.first.wpilibj.TimedRobot
+import edu.wpi.first.math.geometry.Pose3d
+import edu.wpi.first.math.geometry.Rotation3d
+import edu.wpi.first.networktables.NetworkTableInstance
+import edu.wpi.first.wpilibj.DriverStation
+import frc.robot.lib.degrees
+import frc.robot.lib.inches
+import frc.robot.lib.meters
 import frc.robot.subsystems.Drivetrain
 import frc.robot.subsystems.Elevator
 import frc.robot.subsystems.Feeder
 import frc.robot.subsystems.Intake
 import frc.robot.subsystems.Shooter
 import frc.robot.subsystems.Wrist
+import frc.robot.subsystems.drivetrain.Telemetry
+import org.littletonrobotics.junction.LoggedRobot
+import org.littletonrobotics.junction.Logger
+import org.littletonrobotics.junction.networktables.NT4Publisher
 
 /**
  * The functions in this object (which basically functions as a singleton class) are called
@@ -18,7 +28,14 @@ import frc.robot.subsystems.Wrist
  * update the `Main.kt` file in the project. (If you use the IDE's Rename or Move refactorings when
  * renaming the object or package, it will get changed everywhere.)
  */
-object Robot : TimedRobot() {
+object Robot : LoggedRobot() {
+
+    init {
+        Drivetrain.registerTelemetry { Telemetry.telemeterize(it) }
+        DriverStation.silenceJoystickConnectionWarning(true)
+        Logger.addDataReceiver(NT4Publisher())
+        Logger.start()
+    }
 
     override fun teleopPeriodic() {
         Drivetrain.stateMachine()
@@ -27,5 +44,29 @@ object Robot : TimedRobot() {
         Shooter.stateMachine()
         Wrist.stateMachine()
         Elevator.stateMachine()
+    }
+
+    private val componentPoses =
+        NetworkTableInstance.getDefault()
+            .getStructArrayTopic<Pose3d>("ComponentPoses", Pose3d.struct)
+            .publish()
+
+    override fun simulationInit() {
+        Drivetrain.simulationInit()
+    }
+
+    override fun simulationPeriodic() {
+        Elevator.simulationPeriodic()
+        Wrist.simulationPeriodic()
+        componentPoses.set(
+            arrayOf(
+                Pose3d(
+                    0.0,
+                    0.0,
+                    Elevator.heightMeters + 18.inches.meters,
+                    Rotation3d(0.degrees, Wrist.angle, 0.degrees),
+                )
+            )
+        )
     }
 }

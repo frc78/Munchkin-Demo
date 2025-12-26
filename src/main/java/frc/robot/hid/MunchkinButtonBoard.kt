@@ -7,7 +7,7 @@ object MunchkinButtonBoard {
 
     fun raiseWrist() = controller.getRawAxis(1) > 0.5
 
-    fun lowerWrist() = controller.getRawAxis(1) < 0.5
+    fun lowerWrist() = controller.getRawAxis(1) < -0.5
 
     fun slowShot() = controller.getRawButton(6)
 
