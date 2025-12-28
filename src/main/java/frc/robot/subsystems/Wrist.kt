@@ -9,6 +9,7 @@ import com.ctre.phoenix6.signals.InvertedValue
 import edu.wpi.first.math.system.plant.DCMotor
 import edu.wpi.first.math.system.plant.LinearSystemId
 import edu.wpi.first.units.Units.Degrees
+import edu.wpi.first.units.measure.Angle
 import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj.RobotController
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim
@@ -23,7 +24,7 @@ import org.littletonrobotics.junction.Logger
 object Wrist {
     private val MAX_ANGLE = Degrees.of(55.0)
 
-    private val GEAR_RATIO = 3.0 * 3.0 * 4.0 * 36.0 / 12.0
+    private const val GEAR_RATIO = 3.0 * 3.0 * 4.0 * 36.0 / 12.0
 
     val motor = TalonFX(13)
     private val positionControl = PositionVoltage(MAX_ANGLE)
@@ -69,13 +70,23 @@ object Wrist {
         when (currentState) {
             WristState.Idle -> {
                 motor.setControl(positionControl)
-                if (MunchkinController.home()) {
+                if (
+                    MunchkinController.home() ||
+                        MunchkinButtonBoard.home() ||
+                        MunchkinController.intake() ||
+                        MunchkinButtonBoard.intake()
+                ) {
                     positionControl.withPosition(MAX_ANGLE)
                 }
-                if (MunchkinController.lowerWrist() || MunchkinButtonBoard.lowerWrist()) {
-                    currentState = WristState.Lowering
-                } else if (MunchkinController.raiseWrist() || MunchkinButtonBoard.raiseWrist()) {
-                    currentState = WristState.Raising
+                // No point in moving wrist if there's no note.
+                if (IntakeFeederShooter.hasNote) {
+                    if (MunchkinController.lowerWrist() || MunchkinButtonBoard.lowerWrist()) {
+                        currentState = WristState.Lowering
+                    } else if (
+                        MunchkinController.raiseWrist() || MunchkinButtonBoard.raiseWrist()
+                    ) {
+                        currentState = WristState.Raising
+                    }
                 }
             }
             WristState.Lowering -> {
@@ -95,7 +106,7 @@ object Wrist {
         }
     }
 
-    val angle
+    val angle: Angle
         get() = motor.position.value
 
     val sim by lazy {

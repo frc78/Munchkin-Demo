@@ -9,9 +9,7 @@ import frc.robot.lib.inches
 import frc.robot.lib.meters
 import frc.robot.subsystems.Drivetrain
 import frc.robot.subsystems.Elevator
-import frc.robot.subsystems.Feeder
-import frc.robot.subsystems.Intake
-import frc.robot.subsystems.Shooter
+import frc.robot.subsystems.IntakeFeederShooter
 import frc.robot.subsystems.Wrist
 import frc.robot.subsystems.drivetrain.Telemetry
 import org.littletonrobotics.junction.LoggedRobot
@@ -35,13 +33,15 @@ object Robot : LoggedRobot() {
         DriverStation.silenceJoystickConnectionWarning(true)
         Logger.addDataReceiver(NT4Publisher())
         Logger.start()
+        Drivetrain
+        IntakeFeederShooter
+        Wrist
+        Elevator
     }
 
     override fun teleopPeriodic() {
         Drivetrain.stateMachine()
-        Feeder.stateMachine()
-        Intake.stateMachine()
-        Shooter.stateMachine()
+        IntakeFeederShooter.stateMachine()
         Wrist.stateMachine()
         Elevator.stateMachine()
     }
