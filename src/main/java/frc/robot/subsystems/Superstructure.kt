@@ -2,8 +2,8 @@ package frc.robot.subsystems
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration
 import com.ctre.phoenix6.controls.Follower
+import com.ctre.phoenix6.controls.MotionMagicExpoVoltage
 import com.ctre.phoenix6.controls.MotionMagicVoltage
-import com.ctre.phoenix6.controls.PositionVoltage
 import com.ctre.phoenix6.hardware.TalonFX
 import com.ctre.phoenix6.signals.GravityTypeValue
 import com.ctre.phoenix6.signals.InvertedValue
@@ -45,15 +45,16 @@ object Superstructure {
 
     private val elevatorLeader = TalonFX(11)
     private val elevatorFollower = TalonFX(12)
-    private val elevatorControl = MotionMagicVoltage(0.0)
+    private val elevatorControl = MotionMagicExpoVoltage    (0.0)
     private val DRUM_RADIUS = (1.29 / 2).inches
+    private const val ELEVATOR_GEAR_RATIO = 5.0
 
     var state = INTAKE
 
     init {
         val elevatorConfig =
             TalonFXConfiguration().apply {
-                Feedback.SensorToMechanismRatio = 25.0
+                Feedback.SensorToMechanismRatio = ELEVATOR_GEAR_RATIO
                 SoftwareLimitSwitch.apply {
                     ReverseSoftLimitThreshold = 0.0
                     ForwardSoftLimitThreshold = 16.9.inches.toAngle(DRUM_RADIUS).rotations
@@ -61,17 +62,18 @@ object Superstructure {
                     ReverseSoftLimitEnable = true
                 }
                 Slot0.apply {
-                    kP = 66.84
+                    // Scaled from 25:1 SysId gains; re-characterize at 5:1
+                    kP = 334.2
                     kI = 0.0
-                    kD = 1.7421
+                    kD = 8.71
                     kS = 0.22964
-                    kV = 0.70964
-                    kA = 0.018805
-                    kG = 0.12011
+                    kV = 0.1419
+                    kA = 0.0940
+                    kG = 0.6006
                 }
                 MotionMagic.apply {
-                    MotionMagicAcceleration = 1000.0
-                    MotionMagicCruiseVelocity = 3.0
+                    MotionMagicExpo_kA = 0.094
+                    MotionMagicExpo_kV = 0.1419
                 }
                 MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive
             }
@@ -81,10 +83,10 @@ object Superstructure {
 
     private val MAX_WRIST_ANGLE = Degrees.of(55.0)
 
-    private const val WRIST_GEAR_RATIO = 3.0 * 3.0 * 4.0 * 36.0 / 12.0
+    private const val WRIST_GEAR_RATIO = 3.0 * 3.0 * 4.0 * 36.0 / 12.0 // 108
 
     val wristMotor = TalonFX(13)
-    private val wristControl = PositionVoltage(0.0)
+    private val wristControl = MotionMagicExpoVoltage(0.0)
 
     init {
         val wristConfig =
@@ -94,13 +96,15 @@ object Superstructure {
                     .withForwardSoftLimitEnable(true)
                     .withReverseSoftLimitThreshold(0.degrees)
                     .withForwardSoftLimitThreshold(MAX_WRIST_ANGLE)
-                Slot0.kP = 500.0
+                Slot0.kP = 100.0
                 Slot0.kV = 12.19
                 Slot0.kA = 0.02
                 Slot0.kG = 0.16
                 Slot0.GravityType = GravityTypeValue.Arm_Cosine
                 MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive
                 ClosedLoopGeneral.ContinuousWrap = false
+                MotionMagic.MotionMagicExpo_kA = 0.02
+                MotionMagic.MotionMagicExpo_kV = 12.19
             }
 
         wristMotor.configurator.apply(wristConfig)
@@ -165,7 +169,7 @@ object Superstructure {
     val sim by lazy {
         ElevatorSim(
             DCMotor.getFalcon500Foc(2),
-            25.0,
+            ELEVATOR_GEAR_RATIO,
             15.pounds.kilograms,
             (1.29 / 2).inches.meters,
             0.0,
@@ -184,23 +188,25 @@ object Superstructure {
     private var lastTime = RobotController.getMeasureFPGATime()
 
     fun simulationPeriodic() {
+        val now = RobotController.getMeasureFPGATime()
+        val dt = (now - lastTime).seconds
+        lastTime = now
+
         Logger.recordOutput("elevator/position", sim.positionMeters.meters)
         elevatorLeader.simState.setSupplyVoltage(RobotController.getBatteryVoltage())
         sim.setInputVoltage(elevatorLeader.simState.motorVoltage)
-        sim.update((RobotController.getMeasureFPGATime() - lastTime).seconds)
-        lastTime = RobotController.getMeasureFPGATime()
+        sim.update(dt)
         elevatorLeader.simState.setRawRotorPosition(
-            sim.positionMeters.meters.toAngle(DRUM_RADIUS) * 25.0
+            sim.positionMeters.meters.toAngle(DRUM_RADIUS) * ELEVATOR_GEAR_RATIO
         )
         elevatorLeader.simState.setRotorVelocity(
-            sim.velocityMetersPerSecond.metersPerSecond.toAngularVelocity(DRUM_RADIUS) * 25.0
+            sim.velocityMetersPerSecond.metersPerSecond.toAngularVelocity(DRUM_RADIUS) * ELEVATOR_GEAR_RATIO
         )
 
         Logger.recordOutput("wrist/angle", wristMotor.position.value)
         wristMotor.simState.setSupplyVoltage(RobotController.getBatteryVoltage())
-        sim.setInputVoltage(wristMotor.simState.motorVoltage)
-        sim.update((RobotController.getMeasureFPGATime() - lastTime).seconds)
-        lastTime = RobotController.getMeasureFPGATime()
+        wristSim.setInputVoltage(wristMotor.simState.motorVoltage)
+        wristSim.update(dt)
         wristMotor.simState.setRawRotorPosition((wristSim.angleRads * WRIST_GEAR_RATIO).radians)
         wristMotor.simState.setRotorVelocity(
             (wristSim.velocityRadPerSec * WRIST_GEAR_RATIO).radiansPerSecond
@@ -209,13 +215,14 @@ object Superstructure {
 
     val wristSim by lazy {
         SingleJointedArmSim(
-            LinearSystemId.identifyPositionSystem(12.19, 0.02),
+            // Phoenix gains are per rotation; the sim works in radians
+            LinearSystemId.identifyPositionSystem(12.19 / (2 * PI), 0.02 / (2 * PI)),
             DCMotor.getFalcon500Foc(1),
             WRIST_GEAR_RATIO,
             0.25,
             0.0,
             55.degrees.radians,
-            false,
+            true,
             0.0,
         )
     }
