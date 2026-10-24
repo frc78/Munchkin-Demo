@@ -8,9 +8,10 @@ import frc.robot.lib.degrees
 import frc.robot.lib.inches
 import frc.robot.lib.meters
 import frc.robot.subsystems.Drivetrain
-import frc.robot.subsystems.Elevator
-import frc.robot.subsystems.IntakeFeederShooter
-import frc.robot.subsystems.Wrist
+import frc.robot.subsystems.Feeder
+import frc.robot.subsystems.Intake
+import frc.robot.subsystems.Shooter
+import frc.robot.subsystems.Superstructure
 import frc.robot.subsystems.drivetrain.Telemetry
 import org.littletonrobotics.junction.LoggedRobot
 import org.littletonrobotics.junction.Logger
@@ -34,21 +35,35 @@ object Robot : LoggedRobot() {
         Logger.addDataReceiver(NT4Publisher())
         Logger.start()
         Drivetrain
-        IntakeFeederShooter
-        Wrist
-        Elevator
+        Superstructure
+        Intake
+        Shooter
+        Feeder
+    }
+
+    override fun robotPeriodic() {
+        Drivetrain.stateMachine()
+        Superstructure.stateActions()
+        Intake.stateActions()
+        Shooter.stateActions()
+        Feeder.stateActions()
     }
 
     override fun teleopPeriodic() {
         Drivetrain.stateMachine()
-        IntakeFeederShooter.stateMachine()
-        Wrist.stateMachine()
-        Elevator.stateMachine()
+        Superstructure.stateTransitions()
+        Shooter.stateTransitions()
+        Feeder.stateTransitions()
+        Intake.stateTransitions()
     }
 
     private val componentPoses =
         NetworkTableInstance.getDefault()
-            .getStructArrayTopic<Pose3d>("ComponentPoses", Pose3d.struct)
+            .getStructArrayTopic("ComponentPoses", Pose3d.struct)
+            .publish()
+    private val zeroedPoses =
+        NetworkTableInstance.getDefault()
+            .getStructArrayTopic("ZeroedPoses", Pose3d.struct)
             .publish()
 
     override fun simulationInit() {
@@ -56,17 +71,23 @@ object Robot : LoggedRobot() {
     }
 
     override fun simulationPeriodic() {
-        Elevator.simulationPeriodic()
-        Wrist.simulationPeriodic()
+        Superstructure.simulationPeriodic()
         componentPoses.set(
             arrayOf(
                 Pose3d(
                     0.0,
                     0.0,
-                    Elevator.heightMeters + 18.inches.meters,
-                    Rotation3d(0.degrees, Wrist.angle, 0.degrees),
-                )
+                    Superstructure.heightMeters + 18.inches.meters,
+                    Rotation3d(0.degrees, -Superstructure.wristAngle, 0.degrees),
+                ),
+                Pose3d(
+                    0.0,
+                    0.0,
+                    Superstructure.heightMeters,
+                    Rotation3d.kZero,
+                ),
             )
         )
+        zeroedPoses.set(arrayOf(Pose3d.kZero, Pose3d.kZero))
     }
 }

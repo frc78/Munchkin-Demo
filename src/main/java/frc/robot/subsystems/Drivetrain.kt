@@ -5,7 +5,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest
 import edu.wpi.first.wpilibj.Notifier
 import edu.wpi.first.wpilibj.RobotController
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain
-import frc.robot.hid.MunchkinController
+import frc.robot.hid.OI
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
@@ -40,11 +40,11 @@ object Drivetrain : TunerSwerveDrivetrain() {
     fun stateMachine() {
         // Currently no additional state machine logic beyond what is in the base class
         setControl(
-            FieldCentric.withVelocityX(MunchkinController.translationX)
-                .withVelocityY(MunchkinController.translationY)
-                .withRotationalRate(MunchkinController.rotation)
+            FieldCentric.withVelocityX(OI.translationX)
+                .withVelocityY(OI.translationY)
+                .withRotationalRate(OI.rotation)
         )
-        if (MunchkinController.resetRotation()) {
+        if (OI.resetRotation()) {
             seedFieldCentric()
         }
     }

@@ -93,7 +93,7 @@ inline val Number.poundSquareInches: MomentOfInertia
     get() = PoundsSquareInches.of(this.toDouble())
 
 val PoundsSquareInches: MomentOfInertiaUnit =
-    Pounds.mult(InchesPerSecond).mult(Inches).mult(RadiansPerSecond)
+    Pounds.mult(InchesPerSecond).mult(Inches).per(RadiansPerSecond)
 
 // These extension properties allow converting from a unit to a raw value
 // You can use them like so:
